@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { AgentActivityLogComponent } from './agent-feed/agent-activity-log.component';
 import { LeadershipBriefComponent } from './leadership-brief/leadership-brief.component';
+import { ChatComponent } from './chat/chat.component';
 
 interface HealthResponse {
   status: string;
@@ -15,7 +16,7 @@ interface HealthResponse {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, AgentActivityLogComponent, LeadershipBriefComponent],
+  imports: [RouterOutlet, CommonModule, AgentActivityLogComponent, LeadershipBriefComponent, ChatComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

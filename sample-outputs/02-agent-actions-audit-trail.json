@@ -1,0 +1,71 @@
+{
+  "_endpoint": "GET /api/agent/actions",
+  "_capturedDuring": "Phase 5 live verification, 2026-09-04",
+  "_note": "Real audit-trail rows after two manual /api/agent/run-cycle calls. All three planted dataset stories (see data-generator/ANSWER_KEY.md) surfaced independently, each with the decision tier DecisionPolicy assigned. Captured verbatim, not fabricated.",
+  "actions": [
+    {
+      "id": 4,
+      "run_id": 3,
+      "finding_type": "COST_ANOMALY",
+      "dedup_key": "cost-anomaly:V2",
+      "vendor_id": "V2",
+      "zone": null,
+      "shift_id": null,
+      "title": "Cost/km creep: Vendor V2",
+      "facts_summary": "Metric: Cost per Km, Vendor V2 (no fixed SLA for this metric)\nPeriod: 2026-07-21 to 2026-09-01 (42 days)\nCurrent: 12.30/km, prior period: 10.92/km (+12.6% change)\nPeer average across other vendors: 14.95/km (this vendor is -2.66/km vs peer average)\nNo corresponding change in trip distance or delay/quality metrics was found - this reads as a pure cost-per-unit creep rather than a volume or service-quality shift.\n",
+      "narrative": "Vendor V2's cost per kilometer increased 12.6% to 12.30/km over the 42-day period, while remaining 2.66/km below the peer average of 14.95/km. This 12.6% increase occurred without any corresponding change in trip distance or delay/quality metrics, indicating a pure cost-per-unit creep.",
+      "narration_provider": "sarvam",
+      "status": "LOGGED_INTERNAL",
+      "created_at": "2026-09-04T13:02:35.499+00:00",
+      "resolved_at": null
+    },
+    {
+      "id": 3,
+      "run_id": 3,
+      "finding_type": "ZONE_SHIFT_DELAY_PATTERN",
+      "dedup_key": "zone-shift:Marathahalli:S3",
+      "vendor_id": null,
+      "zone": "Marathahalli",
+      "shift_id": "S3",
+      "title": "Recurring delay pattern: Marathahalli / S3",
+      "facts_summary": "Metric: Average Delay - structural pattern (entire dataset period, not a recent trend)\nZone: Marathahalli, Shift: S3\nAverage delay for this zone+shift: 9.7 minutes vs fleet-wide average 5.9 minutes (3.8 minutes above average, 126 trips sampled)\nThis gap holds across the full period rather than appearing recently, consistent with a structural cause (congested route, coverage gap) rather than a one-off incident.\n",
+      "narrative": "Average delay in Marathahalli during shift S3 is 9.7 minutes, exceeding the fleet-wide average of 5.9 minutes by 3.8 minutes across 126 sampled trips. This gap is persistent across the full dataset period rather than a recent spike, indicating a structural cause such as a congested route or coverage gap.",
+      "narration_provider": "sarvam",
+      "status": "AUTO_FIRED",
+      "created_at": "2026-09-04T13:02:31.082+00:00",
+      "resolved_at": null
+    },
+    {
+      "id": 2,
+      "run_id": 1,
+      "finding_type": "VENDOR_SLA_BREACH",
+      "dedup_key": "vendor-sla:V5",
+      "vendor_id": "V5",
+      "zone": null,
+      "shift_id": null,
+      "title": "Vendor V5 sustained on-time SLA breach",
+      "facts_summary": "Metric: On-Time Arrival Rate, Vendor V5\nPeriod: 2026-08-04 to 2026-09-01 (28 days)\nVendor value: 72.7% (SLA: 90%, SLA BREACHED)\nTrend vs prior period: -8.6 points - a sustained decline, not a one-off dip\nShare of all fleet-wide late trips: 27% (118 late trips), dominant delay reason: driver_late (46% of its coded delays)\nFleet-wide context: 78.4% overall (SLA 90%, SLA BREACHED)\n",
+      "narrative": "Vendor V5 recorded a 72.7% on-time arrival rate over 28 days, breaching the 90% SLA with an 8.6 point decline versus the prior period. The vendor accounted for 27% of all fleet-wide late trips with 118 incidents, and driver_late was the dominant delay reason at 46% of its coded delays. The fleet-wide on-time arrival rate was 78.4%, also below the 90% SLA threshold.",
+      "narration_provider": "sarvam",
+      "status": "PENDING_APPROVAL",
+      "created_at": "2026-09-04T12:55:08.670+00:00",
+      "resolved_at": null
+    },
+    {
+      "id": 1,
+      "run_id": 1,
+      "finding_type": "VENDOR_SLA_BREACH",
+      "dedup_key": "vendor-sla:V1",
+      "vendor_id": "V1",
+      "zone": null,
+      "shift_id": null,
+      "title": "Vendor V1 sustained on-time SLA breach",
+      "facts_summary": "Metric: On-Time Arrival Rate, Vendor V1\nPeriod: 2026-08-04 to 2026-09-01 (28 days)\nVendor value: 71.5% (SLA: 90%, SLA BREACHED)\nTrend vs prior period: -9.0 points - a sustained decline, not a one-off dip\nShare of all fleet-wide late trips: 44% (191 late trips), dominant delay reason: driver_late (48% of its coded delays)\nFleet-wide context: 78.4% overall (SLA 90%, SLA BREACHED)\n",
+      "narrative": "Vendor V1 recorded an on-time arrival rate of 71.5% over the 28-day period, breaching the 90% SLA. This represents a 9.0 point decline versus the prior period and accounted for 44% of all fleet-wide late trips. Driver lateness contributed 48% of V1's coded delays, while the fleet-wide on-time rate was 78.4%.",
+      "narration_provider": "sarvam",
+      "status": "PENDING_APPROVAL",
+      "created_at": "2026-09-04T12:55:03.406+00:00",
+      "resolved_at": null
+    }
+  ]
+}

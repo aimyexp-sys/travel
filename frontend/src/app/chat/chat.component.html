@@ -1,0 +1,30 @@
+<section class="chat-card">
+  <h2>Ask the agent</h2>
+
+  <div class="suggestions" *ngIf="messages().length === 0">
+    <button type="button" *ngFor="let s of suggestions" (click)="ask(s)">{{ s }}</button>
+  </div>
+
+  <div class="messages" *ngIf="messages().length">
+    <div class="msg" *ngFor="let m of messages()" [class]="m.role">
+      <span class="who">{{ m.role === 'user' ? 'You' : 'Agent' }}</span>
+      <p>{{ m.text }}</p>
+      <span class="tag" *ngIf="m.role === 'agent' && m.usedFallback">templated fallback</span>
+    </div>
+    <div class="msg agent" *ngIf="sending()">
+      <span class="who">Agent</span>
+      <p class="thinking">thinking…</p>
+    </div>
+  </div>
+
+  <form class="composer" (ngSubmit)="ask()">
+    <input
+      type="text"
+      name="chatDraft"
+      [(ngModel)]="draft"
+      placeholder="Ask about on-time performance, cost, safety, or feedback…"
+      [disabled]="sending()"
+    />
+    <button type="submit" [disabled]="sending() || !draft.trim()">Send</button>
+  </form>
+</section>

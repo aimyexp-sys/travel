@@ -1,0 +1,40 @@
+{
+  "_endpoint": "POST /api/agent/run-cycle",
+  "_capturedDuring": "Phase 5 live verification, 2026-09-04",
+  "_note": "Two consecutive calls, captured verbatim. The first (runId 1) found and created 2 vendor SLA breach actions. Re-running immediately afterwards (runId 2, shown first below) found the SAME 2 findings again but created 0 new actions - all deduped, proving the same issue is not re-flagged every cycle. A third call (runId 3), after two detector thresholds were recalibrated, found 2 more NEW findings (zone/shift pattern + cost anomaly) while still correctly deduping the 2 vendor findings.",
+  "run_immediately_repeated_call": {
+    "runId": 2,
+    "runType": "manual",
+    "asOfDate": "2026-08-31",
+    "findingsDetected": 2,
+    "actionsCreated": 0,
+    "actionsDeduped": 2,
+    "actions": []
+  },
+  "run_after_detector_recalibration": {
+    "runId": 3,
+    "runType": "manual",
+    "asOfDate": "2026-08-31",
+    "findingsDetected": 4,
+    "actionsCreated": 2,
+    "actionsDeduped": 2,
+    "actions": [
+      {
+        "id": 3,
+        "findingType": "ZONE_SHIFT_DELAY_PATTERN",
+        "title": "Recurring delay pattern: Marathahalli / S3",
+        "status": "AUTO_FIRED",
+        "narrative": "Average delay in Marathahalli during shift S3 is 9.7 minutes, exceeding the fleet-wide average of 5.9 minutes by 3.8 minutes across 126 sampled trips. This gap is persistent across the full dataset period rather than a recent spike, indicating a structural cause such as a congested route or coverage gap.",
+        "narrationProvider": "sarvam"
+      },
+      {
+        "id": 4,
+        "findingType": "COST_ANOMALY",
+        "title": "Cost/km creep: Vendor V2",
+        "status": "LOGGED_INTERNAL",
+        "narrative": "Vendor V2's cost per kilometer increased 12.6% to 12.30/km over the 42-day period, while remaining 2.66/km below the peer average of 14.95/km. This 12.6% increase occurred without any corresponding change in trip distance or delay/quality metrics, indicating a pure cost-per-unit creep.",
+        "narrationProvider": "sarvam"
+      }
+    ]
+  }
+}

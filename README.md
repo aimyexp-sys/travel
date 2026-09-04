@@ -8,12 +8,32 @@ Java (Spring Boot) + Angular + PostgreSQL, all run locally via Docker Compose - 
 account or cloud credentials needed to run the demo. See `Claude outputs/MoveInSync_Architecture_Document.md`
 for the full design (including the described, not-built, AWS production mapping).
 
+## Prerequisites
+
+- Docker Desktop (or another Docker Compose-compatible runtime), running.
+- A SarvamAI or OpenAI API key if you want real LLM narration (optional - see "Switching the
+  LLM provider" below; without a key every endpoint still works, just with a templated
+  fallback sentence instead of a fluent one).
+- Nothing else. No AWS account, no cloud credentials, no external services beyond the LLM
+  provider - this whole stack runs on one `docker-compose up` on a laptop.
+
+## Architecture
+
+![Architecture diagram](docs/architecture-diagram.png)
+
+Canonical data model -> benchmarking engine -> attribution + narration -> Java orchestrator
+(sense -> reason -> decide -> act) -> Angular delivery, with a described (not built) AWS
+production path on the right. Full rationale and alternatives considered:
+`Claude outputs/MoveInSync_Architecture_Document.md`.
+
 ## Project layout
 ```
-backend/          Spring Boot app (Java 17, Maven)
-frontend/          Angular app
-data-generator/    Synthetic dataset generator (Phase 0) + ANSWER_KEY.md
-data/              Generated CSVs + SCHEMA.md (input for Phase 2's ingestion layer)
+backend/            Spring Boot app (Java 17, Maven)
+frontend/           Angular app
+data-generator/     Synthetic dataset generator (Phase 0) + ANSWER_KEY.md
+data/               Generated CSVs + SCHEMA.md (input for Phase 2's ingestion layer)
+docs/               Architecture diagram + the pitch deck (Phase 8)
+sample-outputs/     Real captured API responses from live testing (Phase 8)
 docker-compose.yml  Brings up postgres + backend + frontend together
 ```
 
@@ -29,6 +49,61 @@ docker-compose.yml  Brings up postgres + backend + frontend together
 
 First build will take a few minutes (Maven downloads dependencies, npm installs Angular).
 Subsequent `docker-compose up` runs are fast thanks to Docker layer caching.
+
+## Switching the LLM provider
+
+Narration (Phase 4 onward) goes through a single `NarrationClient` interface with two
+implementations - swapping providers is a one-line config change, no redeploy, no code change:
+
+```
+# .env
+LLM_PROVIDER=sarvam        # default; or:
+LLM_PROVIDER=openai
+
+SARVAM_API_KEY=...
+SARVAM_MODEL=sarvam-105b-conversations   # SarvamAI deprecates model ids periodically -
+                                          # if this one stops working, this is the only line to change
+
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-4o-mini
+```
+
+Restart the backend after changing `.env` (`docker-compose up -d --force-recreate backend`
+is enough - no rebuild needed, this is a runtime env var, not a code change). If a call fails
+for any reason (bad key, outage, rate limit, wrong model id), `NarrationService` catches it
+and falls back to a deterministic templated sentence built from the same facts - every
+endpoint stays correct, just less fluent. Watch for `"usedFallback": true` in any response,
+or `narrationProvider: "template-fallback"`.
+
+## Regenerating the dataset
+
+The generator is a build-time fixture script, not part of the deployed stack - it doesn't run
+in Docker:
+
+```
+cd data-generator
+python3 -m pip install --user pandas faker   # if not already installed
+python3 generate_data.py
+```
+
+The random seed is fixed (42), so this reproduces the exact same dataset (and the exact same
+planted stories - see `data-generator/ANSWER_KEY.md`) unless the script itself is edited.
+After regenerating, reload it into a running stack with
+`POST http://localhost:8080/api/admin/ingest?force=true` (see Phase 2 below), or just
+`docker-compose up --build` from a clean volume.
+
+## Sample outputs
+
+`sample-outputs/` has real API responses captured live during build/testing - not
+hand-written to look good, actual `curl`/browser output including a genuine SarvamAI round
+trip. Useful as a reference for what to expect, or if a judge wants to see results without
+running the stack. See `sample-outputs/README.md` for what each file demonstrates.
+
+## Pitch deck
+
+`docs/MoveInSync_Pitch_Deck.pptx` - the presentation: problem framing, architecture, a full
+worked demo walkthrough with real captured numbers, the three-tier decision model, data
+quality handling, evaluation-criteria mapping, and the AWS roadmap.
 
 ## Verifying Phase 2 (data ingestion)
 
@@ -138,9 +213,44 @@ docker-compose up --build
   http://localhost:4200 in two tabs, trigger a run from one, and watch the activity feed
   update in the other.
 
-## Current status: Phase 6 complete
+## Verifying Phase 7 (optional: conversational drill-down)
 
+```
+docker-compose up --build
+```
 
+- Open http://localhost:4200 and scroll to **Ask the agent** below the leadership brief.
+- Try the suggested questions, or type your own:
+  - "Why did on-time arrival drop this week?" - runs the exact same `AttributionService`
+    decomposition as `/api/insights/on-time-gap` and Phase 5's `VendorSlaBreachDetector`,
+    should surface Vendor A/E again.
+  - "How is Vendor A doing on cost?" - detects the vendor mention (`ChatLookupRepository`
+    matches "Vendor A" against the `vendors` table), pulls `COST_PER_KM` for that vendor plus
+    a full fleet ranking.
+  - "Any safety concerns lately?" - `SAFETY_INCIDENT_RATE`, fleet + vendor ranking (should
+    surface Vendor D given D0007's incident cluster, if the window catches it).
+  - "What is happening in Marathahalli?" - detects the zone mention, benchmarks
+    `AVERAGE_DELAY_MINUTES` by zone, flags Marathahalli in the ranking.
+  - Ask something unrelated to any keyword ("how's the fleet doing overall?") and it should
+    fall back to a full 6-metric snapshot rather than erroring.
+- Every answer is still deterministic reasoning (`ChatService` calls the same
+  `AttributionService`/`BenchmarkingService` everything else uses) phrased by
+  `NarrationService` - a bad/rate-limited LLM call still returns a correct, if less fluent,
+  answer (watch for the "templated fallback" tag on a reply).
+- `POST http://localhost:8080/api/chat` with `{"message": "..."}` directly, if you want to see
+  the raw JSON (`factsSummary`, `matchedSubject`, `vendorId`/`zone` detected, `usedFallback`).
+
+## Verifying Phase 8 (packaging)
+
+- `docs/architecture-diagram.png` - the diagram embedded above, also used in the pitch deck.
+- `docs/MoveInSync_Pitch_Deck.pptx` - open it, or convert to PDF for a quick look:
+  `soffice --headless --convert-to pdf docs/MoveInSync_Pitch_Deck.pptx` (LibreOffice) or just
+  open it in PowerPoint/Keynote/Google Slides.
+- `sample-outputs/` - real captured JSON/text, see `sample-outputs/README.md`.
+- This README itself: `docker-compose up --build` is still the only setup instruction, with
+  the LLM provider switch and dataset regeneration now called out as their own sections above.
+
+## Current status: all phases complete (0 through 8 - mandatory, good-to-have, and packaging)
 
 - [x] Phase 0 - synthetic dataset (`data/`, `data-generator/`)
 - [x] Phase 1 - Docker Compose skeleton: postgres + backend + frontend running together,
@@ -168,7 +278,11 @@ docker-compose up --build
       (live feed, seeded from REST history, approve/dismiss for held escalations) and
       `LeadershipBriefComponent` (persona-specific, fixed-template, copyable) - `nginx`/dev-proxy
       both updated to pass the WebSocket upgrade through
-- [ ] Phase 7 - optional chat drill-down
-- [ ] Phase 8 - packaging (deck, sample outputs, final README pass)
+- [x] Phase 7 - `ChatService` (keyword-based intent routing to the SAME attribution/
+      benchmarking/narration services as the rest of the app, `ChatLookupRepository` for
+      vendor/zone name matching) + `POST /api/chat`; Angular's `ChatComponent` - proves
+      "combined multiple output forms" (proactive alerting + narrative brief + conversational
+      chat) over one shared reasoning layer, not three separate pipelines
+- [x] Phase 8 - `docs/architecture-diagram.png` (also embedded above), `docs/MoveInSync_Pitch_Deck.pptx` (12-slide deck built from real captured demo output, not placeholder numbers), `sample-outputs/` (genuine live API responses with a README mapping each to its planted story), and this final README pass (prerequisites, provider-switch, dataset regeneration, and packaging sections)
 
 See `Claude outputs/MoveInSync_Build_Plan.md` for the full phase-by-phase plan.

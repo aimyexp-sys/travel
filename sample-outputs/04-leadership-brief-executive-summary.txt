@@ -1,0 +1,18 @@
+Endpoint: GET /api/persona/leadership-brief
+Captured during: Phase 6 live verification, 2026-09-04
+Note: This is the "executiveSummary" field only (the fresh narration call over the
+fleet-wide KPI snapshot facts) - captured verbatim from two separate browser tabs, both
+independently loading the same live backend, showing identical output.
+
+---
+
+On-Time Arrival Rate fell to 78.36 percent, breaching the 90.0 percent SLA and declining
+4.97 percentage points from the prior period. Cost per Km increased by 0.33 to 15.52 while
+Safety Incidents per 100 Trips dropped 0.58 to 0.63, remaining within the 1.0 SLA. Rider
+Feedback Score decreased 0.07 to 4.45, staying above the 4.0 SLA threshold.
+
+---
+
+Notice how every number carries its context in a single sentence - SLA, trend direction,
+and magnitude - exactly the brief's mandatory "contextualize every metric" requirement,
+now rendered leadership-ready instead of as a bare API response.

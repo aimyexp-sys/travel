@@ -1,0 +1,99 @@
+{
+  "_endpoint": "GET /api/insights/on-time-gap?windowDays=28",
+  "_capturedDuring": "Phase 4 live verification, 2026-09-04",
+  "_note": "Real response from a live SarvamAI (sarvam-105b-conversations) call against this dataset. Not fabricated - captured verbatim during build/testing.",
+  "attribution": {
+    "periodStart": "2026-08-04",
+    "periodEnd": "2026-09-01",
+    "fleetOtaValue": 78.3567134268537,
+    "fleetOtaTrendAbsolute": -4.968274054368138,
+    "slaThreshold": 90.0,
+    "fleetSlaBreached": true,
+    "topContributors": [
+      {
+        "vendorId": "V1",
+        "otaValue": 71.49253731343283,
+        "otaTrendAbsolute": -8.973934989774165,
+        "slaBreached": true,
+        "lateTripCount": 191,
+        "gapContributionPercent": 44.21296296296296,
+        "reasonCodeBreakdown": [
+          {"reasonCode": "driver_late", "count": 259, "sharePercent": 47.522935779816514},
+          {"reasonCode": "traffic", "count": 168, "sharePercent": 30.825688073394495},
+          {"reasonCode": "vehicle_issue", "count": 42, "sharePercent": 7.706422018348624},
+          {"reasonCode": "route_change", "count": 38, "sharePercent": 6.972477064220183},
+          {"reasonCode": "unknown", "count": 38, "sharePercent": 6.972477064220183}
+        ],
+        "dominantReasonCode": "driver_late"
+      },
+      {
+        "vendorId": "V5",
+        "otaValue": 72.68518518518519,
+        "otaTrendAbsolute": -8.641596141596139,
+        "slaBreached": true,
+        "lateTripCount": 118,
+        "gapContributionPercent": 27.314814814814813,
+        "reasonCodeBreakdown": [
+          {"reasonCode": "driver_late", "count": 160, "sharePercent": 45.714285714285715},
+          {"reasonCode": "traffic", "count": 103, "sharePercent": 29.428571428571427},
+          {"reasonCode": "vehicle_issue", "count": 38, "sharePercent": 10.857142857142858},
+          {"reasonCode": "unknown", "count": 28, "sharePercent": 8.0},
+          {"reasonCode": "route_change", "count": 21, "sharePercent": 6.0}
+        ],
+        "dominantReasonCode": "driver_late"
+      },
+      {
+        "vendorId": "V2",
+        "otaValue": 85.1258581235698,
+        "otaTrendAbsolute": -0.9206535043371815,
+        "slaBreached": true,
+        "lateTripCount": 65,
+        "gapContributionPercent": 15.046296296296296,
+        "reasonCodeBreakdown": [
+          {"reasonCode": "traffic", "count": 119, "sharePercent": 38.63636363636363},
+          {"reasonCode": "driver_late", "count": 74, "sharePercent": 24.025974025974026},
+          {"reasonCode": "vehicle_issue", "count": 51, "sharePercent": 16.558441558441558},
+          {"reasonCode": "unknown", "count": 38, "sharePercent": 12.337662337662337},
+          {"reasonCode": "route_change", "count": 26, "sharePercent": 8.441558441558442}
+        ],
+        "dominantReasonCode": "traffic"
+      },
+      {
+        "vendorId": "V4",
+        "otaValue": 70.8955223880597,
+        "otaTrendAbsolute": -1.1975008677542434,
+        "slaBreached": true,
+        "lateTripCount": 39,
+        "gapContributionPercent": 9.027777777777779,
+        "reasonCodeBreakdown": [
+          {"reasonCode": "traffic", "count": 57, "sharePercent": 54.285714285714285},
+          {"reasonCode": "driver_late", "count": 20, "sharePercent": 19.047619047619047},
+          {"reasonCode": "vehicle_issue", "count": 16, "sharePercent": 15.238095238095237},
+          {"reasonCode": "unknown", "count": 7, "sharePercent": 6.666666666666667},
+          {"reasonCode": "route_change", "count": 5, "sharePercent": 4.761904761904762}
+        ],
+        "dominantReasonCode": "traffic"
+      },
+      {
+        "vendorId": "V3",
+        "otaValue": 94.11764705882354,
+        "otaTrendAbsolute": 1.0712894429294977,
+        "slaBreached": false,
+        "lateTripCount": 19,
+        "gapContributionPercent": 4.398148148148148,
+        "reasonCodeBreakdown": [
+          {"reasonCode": "traffic", "count": 89, "sharePercent": 42.38095238095238},
+          {"reasonCode": "driver_late", "count": 54, "sharePercent": 25.714285714285715},
+          {"reasonCode": "vehicle_issue", "count": 34, "sharePercent": 16.19047619047619},
+          {"reasonCode": "route_change", "count": 18, "sharePercent": 8.571428571428571},
+          {"reasonCode": "unknown", "count": 15, "sharePercent": 7.142857142857143}
+        ],
+        "dominantReasonCode": "traffic"
+      }
+    ]
+  },
+  "factsSummary": "Metric: On-Time Arrival Rate\nPeriod: 2026-08-04 to 2026-09-01 (28 days)\nFleet value: 78.4% (SLA: 90%, SLA BREACHED)\nFleet trend vs prior period: -5.0 points\nVendor breakdown (sorted by share of fleet-wide late trips):\n- Vendor V1: OTA 71.5% (-9.0 pts vs prior period), SLA breached, 44% of all late trips fleet-wide (191 late trips), dominant delay reason: driver_late (48% of its coded delays)\n- Vendor V5: OTA 72.7% (-8.6 pts vs prior period), SLA breached, 27% of all late trips fleet-wide (118 late trips), dominant delay reason: driver_late (46% of its coded delays)\n- Vendor V2: OTA 85.1% (-0.9 pts vs prior period), SLA breached, 15% of all late trips fleet-wide (65 late trips), dominant delay reason: traffic (39% of its coded delays)\n- Vendor V4: OTA 70.9% (-1.2 pts vs prior period), SLA breached, 9% of all late trips fleet-wide (39 late trips), dominant delay reason: traffic (54% of its coded delays)\n- Vendor V3: OTA 94.1% (+1.1 pts vs prior period), within SLA, 4% of all late trips fleet-wide (19 late trips), dominant delay reason: traffic (42% of its coded delays)\n",
+  "narrative": "The fleet on-time arrival rate for the 28-day period was 78.4%, breaching the 90% SLA by 11.6 points and declining 5.0 points versus the prior period. Vendors V1 and V5 were responsible for 71% of all late trips, with 44% and 27% respectively, and both saw on-time rates drop by 9.0 and 8.6 points with driver lateness accounting for 48% and 46% of their coded delays. Vendor V3 remains the only operator within SLA at 94.1% and contributed only 4% of late trips.",
+  "narrationProvider": "sarvam",
+  "usedFallback": false
+}
