@@ -42,21 +42,26 @@ server {
     # directly, and it still keeps the browser's own request same-origin
     # (only to this frontend's domain) since nginx does the extra hop
     # server-side.
+    # NOTE: once proxy_pass's target host comes from a variable (needed for
+    # the request-time resolver above), nginx stops doing its usual "replace
+    # the matched location prefix" URI rewriting - any path written after the
+    # variable is used LITERALLY for every request, not as a prefix
+    # substitution. So we forward $request_uri explicitly (the client's full
+    # original path + query string) instead of hardcoding "/api/" or "/ws" -
+    # otherwise every request under a location collapses onto the same
+    # literal backend path regardless of what the client actually requested.
     location /api/ {
         set $backend_upstream ${BACKEND_HOST}${BACKEND_DOMAIN_SUFFIX};
-        proxy_pass ${BACKEND_SCHEME}://$backend_upstream/api/;
+        proxy_pass ${BACKEND_SCHEME}://$backend_upstream$request_uri;
         proxy_http_version 1.1;
         proxy_set_header Host $backend_upstream;
         proxy_set_header X-Real-IP $remote_addr;
     }
 
     # WebSocket (STOMP) endpoint for the agent activity/alert feed (Phase 6).
-    # No trailing slash on either side: nginx passes the matched suffix straight
-    # through to the backend's /ws, so a client connecting to exactly /ws (the
-    # Spring STOMP endpoint's own path, no SockJS suffix) resolves correctly.
     location /ws {
         set $backend_upstream ${BACKEND_HOST}${BACKEND_DOMAIN_SUFFIX};
-        proxy_pass ${BACKEND_SCHEME}://$backend_upstream/ws;
+        proxy_pass ${BACKEND_SCHEME}://$backend_upstream$request_uri;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
