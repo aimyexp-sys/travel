@@ -1,0 +1,71 @@
+.agent-card {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-top: 1.5rem;
+}
+.agent-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .right { display: flex; align-items: center; gap: 0.5rem; }
+  button {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid #2563eb;
+    background: #2563eb;
+    color: #fff;
+    cursor: pointer;
+    &:hover { background: #1d4ed8; }
+  }
+}
+.conn-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #b42318; display: inline-block;
+  &.live { background: #16794f; }
+}
+.conn-label { font-size: 0.75rem; color: #666; }
+
+.empty { color: #666; font-size: 0.9rem; }
+
+.action-list { list-style: none; margin: 1rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.action-item {
+  border: 1px solid #e4e7ec;
+  border-left-width: 4px;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  background: #fafbfc;
+
+  &.pending_approval { border-left-color: #b54708; }
+  &.auto_fired { border-left-color: #2563eb; }
+  &.logged_internal { border-left-color: #6b7280; }
+  &.approved { border-left-color: #16794f; }
+  &.dismissed { opacity: 0.55; }
+
+  h3 { margin: 0.35rem 0 0.25rem; font-size: 1rem; }
+  .narrative { margin: 0; color: #333; font-size: 0.92rem; }
+}
+.action-top { display: flex; align-items: center; gap: 0.5rem; }
+.finding-type { font-size: 0.7rem; letter-spacing: 0.03em; color: #888; text-transform: uppercase; }
+.badge {
+  font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px;
+  &.pending_approval { background: #fef0e6; color: #b54708; }
+  &.auto_fired { background: #e6effe; color: #2563eb; }
+  &.logged_internal { background: #eef0f2; color: #4b5563; }
+  &.approved { background: #e6f4ec; color: #16794f; }
+  &.dismissed { background: #f2f2f2; color: #888; }
+}
+.actions {
+  margin-top: 0.6rem;
+  display: flex; gap: 0.5rem;
+  button {
+    font-size: 0.82rem; padding: 0.3rem 0.65rem; border-radius: 6px; cursor: pointer;
+    border: 1px solid #16794f; background: #16794f; color: #fff;
+    &.secondary { background: #fff; color: #444; border-color: #d0d5dd; }
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+}

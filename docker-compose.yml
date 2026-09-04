@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: moveinsync
+      POSTGRES_USER: moveinsync
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-moveinsync_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U moveinsync -d moveinsync"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/moveinsync
+      SPRING_DATASOURCE_USERNAME: moveinsync
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-moveinsync_dev_password}
+      LLM_PROVIDER: ${LLM_PROVIDER:-sarvam}
+      SARVAM_API_KEY: ${SARVAM_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DATA_SOURCE_DIR: /data
+    volumes:
+      # Phase 0's generated CSVs, read-only - regenerate them and restart
+      # (or POST /api/admin/ingest?force=true) without rebuilding the image.
+      - ./data:/data:ro
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+
+volumes:
+  pgdata:

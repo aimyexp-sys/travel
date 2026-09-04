@@ -1,0 +1,36 @@
+.brief-card {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-top: 1.5rem;
+}
+.brief-header {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+  .right { display: flex; gap: 0.5rem; }
+  button {
+    font-size: 0.85rem; padding: 0.35rem 0.7rem; border-radius: 6px; cursor: pointer;
+    border: 1px solid #d0d5dd; background: #fff; color: #333;
+    &.primary { border-color: #2563eb; background: #2563eb; color: #fff; }
+    &:disabled { opacity: 0.5; cursor: default; }
+  }
+}
+.loading, .empty { color: #666; font-size: 0.9rem; }
+.period { color: #888; font-size: 0.8rem; margin: 0.5rem 0 0.75rem; }
+.exec-summary { font-size: 0.98rem; line-height: 1.5; color: #222; margin: 0 0 1rem; }
+
+.metrics-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+.metric {
+  border: 1px solid #e4e7ec; border-radius: 6px; padding: 0.6rem 0.75rem; background: #fafbfc;
+  &.breached { border-color: #f0b3a4; background: #fff8f6; }
+  .metric-name { font-size: 0.72rem; color: #666; text-transform: uppercase; letter-spacing: 0.02em; }
+  .metric-value { font-size: 1.3rem; font-weight: 700; margin: 0.15rem 0; }
+  .metric-meta { display: flex; gap: 0.5rem; font-size: 0.72rem; color: #888; }
+}
+
+h3 { margin: 1rem 0 0.4rem; font-size: 0.95rem; }
+.problem-list { margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.problem-list li p { margin: 0.15rem 0 0; color: #333; font-size: 0.9rem; }
+.win-list { margin: 0; padding-left: 1.2rem; color: #166534; font-size: 0.9rem; }

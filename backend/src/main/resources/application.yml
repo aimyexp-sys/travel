@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: agentic-backend
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/moveinsync}
+    username: ${SPRING_DATASOURCE_USERNAME:moveinsync}
+    password: ${SPRING_DATASOURCE_PASSWORD:moveinsync_dev_password}
+
+  jpa:
+    hibernate:
+      ddl-auto: none   # schema is owned by Flyway migrations, not Hibernate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+# Phase 2 ingestion (SyntheticSourceAdapter today; SampleDatasetAdapter later).
+app:
+  data:
+    source-dir: ${DATA_SOURCE_DIR:/data}
+  ingestion:
+    auto-run: ${INGESTION_AUTO_RUN:true}   # load on startup only if canonical tables are empty
+
+# LLM narration provider - Phase 4. Kept here so switching SarvamAI <-> OpenAI
+# during the hackathon is a config/env-var change, not a code change.
+# See SarvamAiNarrationClient's Javadoc: verify base-url/model against
+# SarvamAI's current docs before relying on it - this was built without a
+# live key to test against, and falls back to a templated summary if wrong.
+llm:
+  provider: ${LLM_PROVIDER:sarvam}   # sarvam | openai
+  sarvam:
+    base-url: ${SARVAM_BASE_URL:https://api.sarvam.ai/v1/chat/completions}
+    api-key: ${SARVAM_API_KEY:}
+    model: ${SARVAM_MODEL:sarvam-105b-conversations}
+  openai:
+    base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1/chat/completions}
+    api-key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-4o-mini}
+
+logging:
+  level:
+    com.moveinsync.agentic: INFO

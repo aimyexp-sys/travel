@@ -1,0 +1,22 @@
+<main class="wrap">
+  <h1>{{ title }}</h1>
+
+  <section class="health-card" *ngIf="health() as h">
+    <h2>System status</h2>
+    <dl>
+      <dt>Backend</dt><dd class="ok">{{ h.status }} ({{ h.service }})</dd>
+      <dt>Database</dt><dd [class.ok]="h.database === 'UP'" [class.down]="h.database !== 'UP'">{{ h.database }}</dd>
+      <dt>Checked at</dt><dd>{{ h.timestamp }}</dd>
+    </dl>
+  </section>
+
+  <section class="health-card error" *ngIf="error() as e">
+    <h2>Backend unreachable</h2>
+    <p>{{ e }}</p>
+  </section>
+
+  <app-agent-activity-log />
+  <app-leadership-brief />
+
+  <router-outlet />
+</main>

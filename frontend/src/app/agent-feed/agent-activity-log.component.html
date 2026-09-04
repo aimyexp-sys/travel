@@ -1,0 +1,30 @@
+<section class="agent-card">
+  <div class="agent-card-header">
+    <h2>Agent activity</h2>
+    <div class="right">
+      <span class="conn-dot" [class.live]="feed.connected()"></span>
+      <span class="conn-label">{{ feed.connected() ? 'live' : 'reconnecting…' }}</span>
+      <button type="button" (click)="runCycleNow()">Run agent cycle now</button>
+    </div>
+  </div>
+
+  <p class="empty" *ngIf="feed.actions().length === 0">
+    No agent findings yet — click "Run agent cycle now" to trigger sense → reason → decide → act.
+  </p>
+
+  <ul class="action-list">
+    <li *ngFor="let a of feed.actions()" class="action-item" [class]="a.status.toLowerCase()">
+      <div class="action-top">
+        <span class="badge" [class]="a.status.toLowerCase()">{{ statusLabel(a.status) }}</span>
+        <span class="finding-type">{{ a.findingType }}</span>
+      </div>
+      <h3>{{ a.title }}</h3>
+      <p class="narrative">{{ a.narrative }}</p>
+
+      <div class="actions" *ngIf="a.status === 'PENDING_APPROVAL'">
+        <button type="button" [disabled]="busyId === a.id" (click)="approve(a)">Approve &amp; send</button>
+        <button type="button" class="secondary" [disabled]="busyId === a.id" (click)="dismiss(a)">Dismiss</button>
+      </div>
+    </li>
+  </ul>
+</section>

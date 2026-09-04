@@ -1,0 +1,20 @@
+.wrap {
+  font-family: system-ui, sans-serif;
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+.health-card {
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-top: 1.5rem;
+
+  &.error { border-color: #e04f4f; background: #fff5f5; }
+
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1rem; margin: 0; }
+  dt { font-weight: 600; color: #555; }
+  dd { margin: 0; }
+  .ok { color: #16794f; font-weight: 600; }
+  .down { color: #b42318; font-weight: 600; }
+}

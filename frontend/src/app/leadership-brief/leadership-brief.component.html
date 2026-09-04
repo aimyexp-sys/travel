@@ -1,0 +1,46 @@
+<section class="brief-card">
+  <div class="brief-header">
+    <h2>Leadership brief</h2>
+    <div class="right">
+      <button type="button" (click)="refresh()" [disabled]="loading()">Refresh</button>
+      <button type="button" class="primary" (click)="copyToClipboard()" *ngIf="brief()">
+        {{ copied() ? 'Copied!' : 'Copy brief' }}
+      </button>
+    </div>
+  </div>
+
+  <p class="loading" *ngIf="loading() && !brief()">Compiling brief…</p>
+
+  <ng-container *ngIf="brief() as b">
+    <p class="period">As of {{ b.periodEnd }} · trailing {{ b.windowDays }} days</p>
+
+    <p class="exec-summary">{{ b.executiveSummary }}</p>
+
+    <div class="metrics-grid">
+      <div class="metric" *ngFor="let m of b.fleetMetrics" [class.breached]="m.slaBreached === true">
+        <div class="metric-name">{{ m.metricDisplayName }}</div>
+        <div class="metric-value">{{ m.currentValue?.toFixed(2) }}</div>
+        <div class="metric-meta">
+          <span *ngIf="m.slaThreshold !== null">SLA {{ m.slaThreshold }}</span>
+          <span *ngIf="m.trendDeltaAbsolute !== null">{{ m.trendDeltaAbsolute! > 0 ? '+' : '' }}{{ m.trendDeltaAbsolute!.toFixed(2) }} trend</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Top problem areas</h3>
+    <ol class="problem-list" *ngIf="b.topProblemAreas.length; else noProblems">
+      <li *ngFor="let p of b.topProblemAreas">
+        <strong>{{ p.title }}</strong>
+        <p>{{ p.narrative }}</p>
+      </li>
+    </ol>
+    <ng-template #noProblems><p class="empty">No open findings right now.</p></ng-template>
+
+    <ng-container *ngIf="b.wins.length">
+      <h3>Wins</h3>
+      <ul class="win-list">
+        <li *ngFor="let w of b.wins">{{ w }}</li>
+      </ul>
+    </ng-container>
+  </ng-container>
+</section>
