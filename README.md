@@ -270,14 +270,25 @@ still works exactly as before):
   directly (unchanged), while Render (which has no single connection-string env var by
   default) assembles the URL from `DB_HOST`/`DB_NAME`, which `render.yaml` wires from the
   free Postgres instance automatically.
-- `frontend/nginx.conf` became `frontend/nginx.conf.template`, using `${PORT}` and
-  `${BACKEND_HOSTPORT}` instead of the hardcoded `80` / `backend:8080`. This relies on the
-  official `nginx:1.27-alpine` image's built-in behavior: any file under
-  `/etc/nginx/templates/*.template` is `envsubst`-processed into `/etc/nginx/conf.d/`
-  before nginx starts - no custom entrypoint script needed. `BACKEND_HOSTPORT` is wired by
-  `render.yaml` from the backend service's private-network `hostport`
-  (`fromService: { property: hostport }`), so the frontend reaches the backend over
-  Render's internal network - no public URL, no CORS setup, no Angular code changes.
+- `frontend/nginx.conf` became `frontend/nginx.conf.template`, using env-var placeholders
+  instead of hardcoded values. This relies on the official `nginx:1.27-alpine` image's
+  built-in behavior: any file under `/etc/nginx/templates/*.template` is
+  `envsubst`-processed into `/etc/nginx/conf.d/` before nginx starts - no custom
+  entrypoint script needed. It also resolves the backend hostname at *request* time
+  rather than once at nginx startup (`resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;` plus
+  a variable-based `proxy_pass`), so a slow-starting or restarting backend doesn't
+  permanently crash the frontend's nginx.
+- **Frontend -> backend routing goes over the backend's public `onrender.com` URL, not
+  Render's private network.** Render's free web services can *send* private-network
+  requests but can't *receive* them
+  ([docs](https://render.com/docs/private-network)) - so two free services can never
+  reach each other via the private `host:port` form; it simply never resolves.
+  `render.yaml` instead wires `BACKEND_HOST` from the backend service's `fromService`
+  `host` property (its Render-assigned slug, e.g. `moveinsync-backend-xxxx`) and the
+  nginx template builds `https://<that-slug>.onrender.com` from it. This is still just an
+  ordinary outbound HTTPS call from nginx (unaffected by the free-tier restriction above),
+  and the browser's own requests stay same-origin the whole time - no CORS setup, no
+  Angular code changes, since nginx does the extra hop server-side.
 
 **Steps to deploy:**
 
@@ -294,13 +305,17 @@ still works exactly as before):
 
 **Free-tier caveats worth knowing before a demo:**
 
-- Free web services spin down after 15 minutes idle and take roughly a minute to wake
-  back up on the next request - hit both URLs a minute or two before judging starts.
+- Free web services spin down after 15 minutes idle and can take a minute or more to wake
+  back up on the next request (a cold Spring Boot start alone took ~100s in testing) -
+  open both URLs a few minutes before judging starts so they're warm.
 - The free Postgres database expires 30 days after creation (14-day grace period after
   that). Fine for a hackathon demo; recreate it if the deployment needs to outlive that
   window.
 - Free services get 750 shared instance-hours/month combined, which is more than enough
   for two low-traffic demo services.
+- Free-to-free service communication only works over a service's *public* URL, never
+  Render's private network (see above) - this is already handled by `render.yaml` and
+  `nginx.conf.template`, but matters if you add a third service later.
 
 
 ## Current status: all phases complete (0 through 8 - mandatory, good-to-have, and packaging)

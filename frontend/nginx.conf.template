@@ -7,15 +7,19 @@ server {
     # Resolve the backend hostname at REQUEST time, not at nginx startup.
     # A static "proxy_pass http://host:port/;" resolves DNS once when nginx
     # loads its config, and fails hard forever if that hostname isn't
-    # resolvable at that exact instant (e.g. Render's backend service still
-    # spinning up). Using a variable in proxy_pass forces per-request lookups
-    # instead. NGINX_LOCAL_RESOLVERS is set by the official nginx image's own
-    # entrypoint script (15-local-resolvers.envsh, enabled via
-    # NGINX_ENTRYPOINT_LOCAL_RESOLVERS in the Dockerfile) from the
-    # container's own /etc/resolv.conf - so this works unchanged on Docker
-    # Compose (Docker's embedded DNS) and on Render (Render's private-network
-    # DNS) without hardcoding either platform's resolver IP.
+    # resolvable at that exact instant. Using a variable in proxy_pass forces
+    # per-request lookups instead. NGINX_LOCAL_RESOLVERS is set by the
+    # official nginx image's own entrypoint script (15-local-resolvers.envsh,
+    # enabled via NGINX_ENTRYPOINT_LOCAL_RESOLVERS in the Dockerfile) from the
+    # container's own /etc/resolv.conf, so this works on Docker Compose,
+    # Render's private network, and plain public DNS without hardcoding any
+    # platform's resolver IP.
     resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+    # Needed because BACKEND_HOST/BACKEND_DOMAIN_SUFFIX below can point at a
+    # public HTTPS hostname (see comment on BACKEND_SCHEME) - without this,
+    # nginx doesn't send the right SNI/cert-verification hostname when the
+    # upstream target comes from a variable instead of a static proxy_pass.
+    proxy_ssl_server_name on;
 
     # Angular routing: fall back to index.html for unknown paths
     location / {
@@ -23,27 +27,39 @@ server {
     }
 
     # Reverse-proxy API calls to the backend service, so the Angular app can
-    # call relative /api/* paths with no CORS setup. BACKEND_HOSTPORT is
-    # "backend:8080" in Docker Compose and Render's private-network
-    # "<service>:<port>" host:port pair in render.yaml (via fromService).
+    # call relative /api/* paths with no CORS setup.
+    #
+    # BACKEND_SCHEME / BACKEND_HOST / BACKEND_DOMAIN_SUFFIX together build the
+    # upstream origin as "${BACKEND_SCHEME}://${BACKEND_HOST}${BACKEND_DOMAIN_SUFFIX}":
+    #   - Docker Compose:  http://backend:8080          (BACKEND_DOMAIN_SUFFIX empty)
+    #   - Render (free):   https://<backend-slug>.onrender.com
+    # Render's free web services can SEND private-network requests but can't
+    # RECEIVE them (see https://render.com/docs/private-network), so two free
+    # services can never reach each other over the private "host:port" form -
+    # that address will never resolve. Going over the backend's public
+    # onrender.com URL instead sidesteps that restriction entirely: it's an
+    # ordinary outbound HTTPS call, exactly like any browser reaching it
+    # directly, and it still keeps the browser's own request same-origin
+    # (only to this frontend's domain) since nginx does the extra hop
+    # server-side.
     location /api/ {
-        set $backend_upstream ${BACKEND_HOSTPORT};
-        proxy_pass http://$backend_upstream/api/;
+        set $backend_upstream ${BACKEND_HOST}${BACKEND_DOMAIN_SUFFIX};
+        proxy_pass ${BACKEND_SCHEME}://$backend_upstream/api/;
         proxy_http_version 1.1;
-        proxy_set_header Host $host;
+        proxy_set_header Host $backend_upstream;
         proxy_set_header X-Real-IP $remote_addr;
     }
 
     # WebSocket (STOMP) endpoint for the agent activity/alert feed (Phase 6).
     # No trailing slash on either side: nginx passes the matched suffix straight
-    # through to BACKEND_HOSTPORT/ws, so a client connecting to exactly /ws (the
+    # through to the backend's /ws, so a client connecting to exactly /ws (the
     # Spring STOMP endpoint's own path, no SockJS suffix) resolves correctly.
     location /ws {
-        set $backend_upstream ${BACKEND_HOSTPORT};
-        proxy_pass http://$backend_upstream/ws;
+        set $backend_upstream ${BACKEND_HOST}${BACKEND_DOMAIN_SUFFIX};
+        proxy_pass ${BACKEND_SCHEME}://$backend_upstream/ws;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
+        proxy_set_header Host $backend_upstream;
     }
 }

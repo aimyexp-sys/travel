@@ -49,11 +49,23 @@ services:
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: ./frontend
     envVars:
-      # Resolves over Render's private network as "<service>:<port>", so the
-      # frontend's nginx reverse-proxy reaches the backend without a public
-      # URL, without CORS, and without hardcoding a Render hostname.
-      - key: BACKEND_HOSTPORT
+      # Render's free web services can SEND private-network requests but
+      # can't RECEIVE them (https://render.com/docs/private-network), so two
+      # free services (this frontend and moveinsync-backend) can never reach
+      # each other via the private "host:port" form - it will never resolve.
+      # Instead, route over the backend's public onrender.com URL: an
+      # ordinary outbound HTTPS call, unaffected by that restriction, while
+      # still keeping the browser's own requests same-origin (nginx does the
+      # extra hop server-side - see nginx.conf.template).
+      - key: BACKEND_SCHEME
+        value: https
+      # fromService's "host" property gives the backend's Render-assigned
+      # slug (e.g. "moveinsync-backend-2bot") with no port - the same slug
+      # Render uses for its public onrender.com subdomain.
+      - key: BACKEND_HOST
         fromService:
           name: moveinsync-backend
           type: web
-          property: hostport
+          property: host
+      - key: BACKEND_DOMAIN_SUFFIX
+        value: .onrender.com
