@@ -2,8 +2,13 @@ spring:
   application:
     name: agentic-backend
 
+  # SPRING_DATASOURCE_URL is set directly by docker-compose.yml for local dev.
+  # On Render there is no single connection-string env var wired in (see
+  # render.yaml) - DB_HOST/DB_NAME come from the free Postgres's fromDatabase
+  # properties instead, and this nested placeholder assembles the JDBC URL
+  # from them. Either path lands on the same property.
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/moveinsync}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:moveinsync}}
     username: ${SPRING_DATASOURCE_USERNAME:moveinsync}
     password: ${SPRING_DATASOURCE_PASSWORD:moveinsync_dev_password}
 
@@ -20,7 +25,10 @@ spring:
     locations: classpath:db/migration
 
 server:
-  port: 8080
+  # Render assigns its own PORT at runtime and requires the app to bind to
+  # it; local docker-compose doesn't set PORT, so this falls back to 8080
+  # exactly as before.
+  port: ${PORT:8080}
 
 # Phase 2 ingestion (SyntheticSourceAdapter today; SampleDatasetAdapter later).
 app:

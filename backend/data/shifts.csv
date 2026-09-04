@@ -1,0 +1,4 @@
+shift_id,shift_name,scheduled_start,scheduled_end
+S1,Day Shift,09:00,18:00
+S2,General Shift,11:00,20:00
+S3,Night Shift,22:00,07:00

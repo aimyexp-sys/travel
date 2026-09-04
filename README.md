@@ -250,6 +250,59 @@ docker-compose up --build
 - This README itself: `docker-compose up --build` is still the only setup instruction, with
   the LLM provider switch and dataset regeneration now called out as their own sections above.
 
+## Deploying to Render (free tier)
+
+The stack (Postgres + Spring Boot backend + Angular/nginx frontend) also runs as a
+[Render Blueprint](https://render.com/docs/blueprint-spec) using only Render's free
+services - no other cloud account or credit card needed. `render.yaml` (repo root)
+defines all three pieces; nothing outside this repo needs to be created by hand except
+two API-key secrets.
+
+**What changed vs. the local Docker Compose setup** (Compose itself is untouched and
+still works exactly as before):
+
+- `backend/Dockerfile` now also bakes `backend/data/*.csv` into the image
+  (`COPY data/ /data/`), since Render has no bind-mount equivalent to Compose's
+  `./data:/data:ro`. Locally, Compose's bind mount still shadows this at runtime, so
+  local behavior is unchanged.
+- `backend/src/main/resources/application.yml`'s datasource URL and server port are now
+  environment-driven with fallbacks: Compose keeps setting `SPRING_DATASOURCE_URL`
+  directly (unchanged), while Render (which has no single connection-string env var by
+  default) assembles the URL from `DB_HOST`/`DB_NAME`, which `render.yaml` wires from the
+  free Postgres instance automatically.
+- `frontend/nginx.conf` became `frontend/nginx.conf.template`, using `${PORT}` and
+  `${BACKEND_HOSTPORT}` instead of the hardcoded `80` / `backend:8080`. This relies on the
+  official `nginx:1.27-alpine` image's built-in behavior: any file under
+  `/etc/nginx/templates/*.template` is `envsubst`-processed into `/etc/nginx/conf.d/`
+  before nginx starts - no custom entrypoint script needed. `BACKEND_HOSTPORT` is wired by
+  `render.yaml` from the backend service's private-network `hostport`
+  (`fromService: { property: hostport }`), so the frontend reaches the backend over
+  Render's internal network - no public URL, no CORS setup, no Angular code changes.
+
+**Steps to deploy:**
+
+1. Push this repo to GitHub (if it isn't already).
+2. In the Render dashboard: **New -> Blueprint**, connect the repo, and let Render read
+   `render.yaml`. It will provision one free Postgres database and two free Docker web
+   services (`moveinsync-backend`, `moveinsync-frontend`).
+3. Before (or right after) the first deploy, open `moveinsync-backend` -> **Environment**
+   and set `SARVAM_API_KEY` and `OPENAI_API_KEY` manually. These are marked `sync: false`
+   in `render.yaml` on purpose, so the keys are never committed to the repo - the same
+   discipline as the local `.env` file.
+4. Wait for both services to build and go live, then open the frontend service's
+   `onrender.com` URL.
+
+**Free-tier caveats worth knowing before a demo:**
+
+- Free web services spin down after 15 minutes idle and take roughly a minute to wake
+  back up on the next request - hit both URLs a minute or two before judging starts.
+- The free Postgres database expires 30 days after creation (14-day grace period after
+  that). Fine for a hackathon demo; recreate it if the deployment needs to outlive that
+  window.
+- Free services get 750 shared instance-hours/month combined, which is more than enough
+  for two low-traffic demo services.
+
+
 ## Current status: all phases complete (0 through 8 - mandatory, good-to-have, and packaging)
 
 - [x] Phase 0 - synthetic dataset (`data/`, `data-generator/`)

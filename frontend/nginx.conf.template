@@ -1,5 +1,5 @@
 server {
-    listen 80;
+    listen ${PORT};
     server_name _;
     root /usr/share/nginx/html;
     index index.html;
@@ -9,10 +9,12 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # Reverse-proxy API calls to the backend service (Compose network),
-    # so the Angular app can call relative /api/* paths with no CORS setup.
+    # Reverse-proxy API calls to the backend service, so the Angular app can
+    # call relative /api/* paths with no CORS setup. BACKEND_HOSTPORT is
+    # "backend:8080" in Docker Compose and Render's private-network
+    # "<service>:<port>" host:port pair in render.yaml (via fromService).
     location /api/ {
-        proxy_pass http://backend:8080/api/;
+        proxy_pass http://${BACKEND_HOSTPORT}/api/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -20,10 +22,10 @@ server {
 
     # WebSocket (STOMP) endpoint for the agent activity/alert feed (Phase 6).
     # No trailing slash on either side: nginx passes the matched suffix straight
-    # through to backend:8080/ws, so a client connecting to exactly /ws (the
+    # through to BACKEND_HOSTPORT/ws, so a client connecting to exactly /ws (the
     # Spring STOMP endpoint's own path, no SockJS suffix) resolves correctly.
     location /ws {
-        proxy_pass http://backend:8080/ws;
+        proxy_pass http://${BACKEND_HOSTPORT}/ws;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";

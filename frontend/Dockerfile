@@ -9,5 +9,16 @@ RUN npx ng build --configuration production
 # --- serve stage ---
 FROM nginx:1.27-alpine
 COPY --from=build /app/dist/frontend/browser /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# The nginx:1.27-alpine image's own entrypoint runs envsubst over every file
+# under /etc/nginx/templates/*.template (restricted to variables actually set
+# in the container's env, so nginx's own $host/$remote_addr/$http_upgrade are
+# left untouched) and writes the result to /etc/nginx/conf.d/ before nginx
+# starts - no custom entrypoint script needed.
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+# Local docker-compose overrides both of these (PORT=80, BACKEND_HOSTPORT=backend:8080
+# is already the Compose service name/port, so it doesn't even need overriding there).
+# Render sets its own PORT and BACKEND_HOSTPORT (see render.yaml); these are just
+# safe defaults for running the image standalone.
+ENV PORT=80
+ENV BACKEND_HOSTPORT=backend:8080
 EXPOSE 80
