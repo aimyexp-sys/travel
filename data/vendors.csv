@@ -1,0 +1,6 @@
+vendor_id,vendor_name,mode_types_served,contract_start
+V1,Vendor A,cab|nodal,2024-01-29
+V2,Vendor B,nodal|shuttle,2025-07-22
+V3,Vendor C,cab,2025-10-19
+V4,Vendor D,shuttle,2025-02-05
+V5,Vendor E,cab|shuttle,2025-03-08

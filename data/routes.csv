@@ -1,0 +1,25 @@
+route_id,mode,origin_zone,destination_zone,planned_distance_km
+R001,cab,Whitefield,Office Campus,25.2
+R002,nodal,Whitefield,Office Campus,22.5
+R003,shuttle,Whitefield,Office Campus,22.0
+R004,cab,Electronic City,Office Campus,19.5
+R005,nodal,Electronic City,Office Campus,21.5
+R006,shuttle,Electronic City,Office Campus,19.0
+R007,cab,Koramangala,Office Campus,9.3
+R008,nodal,Koramangala,Office Campus,9.0
+R009,shuttle,Koramangala,Office Campus,9.9
+R010,cab,Indiranagar,Office Campus,8.7
+R011,nodal,Indiranagar,Office Campus,8.0
+R012,shuttle,Indiranagar,Office Campus,7.4
+R013,cab,HSR Layout,Office Campus,11.0
+R014,nodal,HSR Layout,Office Campus,11.6
+R015,shuttle,HSR Layout,Office Campus,12.2
+R016,cab,Marathahalli,Office Campus,15.5
+R017,nodal,Marathahalli,Office Campus,14.7
+R018,shuttle,Marathahalli,Office Campus,15.0
+R019,cab,BTM Layout,Office Campus,9.2
+R020,nodal,BTM Layout,Office Campus,10.0
+R021,shuttle,BTM Layout,Office Campus,10.7
+R022,cab,Hebbal,Office Campus,17.0
+R023,nodal,Hebbal,Office Campus,16.6
+R024,shuttle,Hebbal,Office Campus,17.9
