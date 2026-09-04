@@ -4,6 +4,19 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
+    # Resolve the backend hostname at REQUEST time, not at nginx startup.
+    # A static "proxy_pass http://host:port/;" resolves DNS once when nginx
+    # loads its config, and fails hard forever if that hostname isn't
+    # resolvable at that exact instant (e.g. Render's backend service still
+    # spinning up). Using a variable in proxy_pass forces per-request lookups
+    # instead. NGINX_LOCAL_RESOLVERS is set by the official nginx image's own
+    # entrypoint script (15-local-resolvers.envsh, enabled via
+    # NGINX_ENTRYPOINT_LOCAL_RESOLVERS in the Dockerfile) from the
+    # container's own /etc/resolv.conf - so this works unchanged on Docker
+    # Compose (Docker's embedded DNS) and on Render (Render's private-network
+    # DNS) without hardcoding either platform's resolver IP.
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+
     # Angular routing: fall back to index.html for unknown paths
     location / {
         try_files $uri $uri/ /index.html;
@@ -14,7 +27,8 @@ server {
     # "backend:8080" in Docker Compose and Render's private-network
     # "<service>:<port>" host:port pair in render.yaml (via fromService).
     location /api/ {
-        proxy_pass http://${BACKEND_HOSTPORT}/api/;
+        set $backend_upstream ${BACKEND_HOSTPORT};
+        proxy_pass http://$backend_upstream/api/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -25,7 +39,8 @@ server {
     # through to BACKEND_HOSTPORT/ws, so a client connecting to exactly /ws (the
     # Spring STOMP endpoint's own path, no SockJS suffix) resolves correctly.
     location /ws {
-        proxy_pass http://${BACKEND_HOSTPORT}/ws;
+        set $backend_upstream ${BACKEND_HOSTPORT};
+        proxy_pass http://$backend_upstream/ws;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
